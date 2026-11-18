@@ -1,14 +1,15 @@
-
 const API_URL = "http://localhost:3000/api/treinos";
+const RANKING_URL = "http://localhost:3000/api/ranking";
 
 const formulario = document.getElementById("formTreino");
 const historico = document.getElementById("historico");
+const listaRanking = document.getElementById("listaRanking");
 const botaoSalvar = document.querySelector("#formTreino button");
 
 let treinos = [];
 let editandoId = null;
 
-// CARREGAR TREINOS DO MONGODB
+// 1. CARREGAR TREINOS DO MONGODB
 async function carregarTreinos() {
     try {
         const resposta = await fetch(API_URL);
@@ -18,7 +19,6 @@ async function carregarTreinos() {
         }
 
         treinos = await resposta.json();
-
         mostrarHistorico();
 
     } catch (erro) {
@@ -27,7 +27,7 @@ async function carregarTreinos() {
     }
 }
 
-// CADASTRAR OU ATUALIZAR TREINO
+// 2. CADASTRAR OU ATUALIZAR TREINO
 formulario.addEventListener("submit", async function(event) {
     event.preventDefault();
 
@@ -43,7 +43,6 @@ formulario.addEventListener("submit", async function(event) {
         let resposta;
 
         if (editandoId === null) {
-
             // CADASTRAR
             resposta = await fetch(API_URL, {
                 method: "POST",
@@ -52,9 +51,7 @@ formulario.addEventListener("submit", async function(event) {
                 },
                 body: JSON.stringify(treino)
             });
-
         } else {
-
             // ATUALIZAR
             resposta = await fetch(`${API_URL}/${editandoId}`, {
                 method: "PUT",
@@ -74,7 +71,9 @@ formulario.addEventListener("submit", async function(event) {
         editandoId = null;
         botaoSalvar.textContent = "Salvar treino";
 
+        // Atualiza o histórico e o ranking na hora
         await carregarTreinos();
+        await carregarRanking();
 
         alert("Treino salvo com sucesso!");
 
@@ -84,7 +83,7 @@ formulario.addEventListener("submit", async function(event) {
     }
 });
 
-// MOSTRAR HISTÓRICO
+// 3. MOSTRAR HISTÓRICO NA TELA
 function mostrarHistorico() {
     historico.innerHTML = "";
 
@@ -95,6 +94,7 @@ function mostrarHistorico() {
 
     treinos.forEach(function(treino) {
         const card = document.createElement("div");
+        card.className = "card-treino";
 
         const titulo = document.createElement("h3");
         titulo.textContent = treino.distancia + " metros";
@@ -106,11 +106,12 @@ function mostrarHistorico() {
         data.textContent = "Data: " + String(treino.data).slice(0, 10);
 
         const observacoes = document.createElement("p");
-        observacoes.textContent = "Observações: " + (treino.observacoes || "");
+        observacoes.textContent = "Observações: " + (treino.observacoes || "Nenhuma");
 
         // BOTÃO EDITAR
         const editar = document.createElement("button");
         editar.type = "button";
+        editar.className = "btn-editar";
         editar.textContent = "Editar treino";
 
         editar.addEventListener("click", function() {
@@ -121,7 +122,6 @@ function mostrarHistorico() {
             document.getElementById("observacoes").value = treino.observacoes || "";
 
             editandoId = treino._id;
-
             botaoSalvar.textContent = "Atualizar treino";
 
             window.scrollTo({
@@ -133,6 +133,7 @@ function mostrarHistorico() {
         // BOTÃO EXCLUIR
         const excluir = document.createElement("button");
         excluir.type = "button";
+        excluir.className = "btn-excluir";
         excluir.textContent = "Excluir treino";
 
         excluir.addEventListener("click", async function() {
@@ -159,7 +160,6 @@ function mostrarHistorico() {
                 }
 
                 await carregarTreinos();
-
                 alert("Treino excluído com sucesso!");
 
             } catch (erro) {
@@ -179,12 +179,7 @@ function mostrarHistorico() {
     });
 }
 
-// CARREGAR AUTOMATICAMENTE AO ABRIR A PÁGINA
-carregarTreinos();
-
-const RANKING_URL = "http://localhost:3000/api/ranking";
-const listaRanking = document.getElementById("listaRanking");
-
+// 4. CARREGAR RANKING DO REDIS
 async function carregarRanking() {
     let dadosRanking = [];
 
@@ -193,7 +188,7 @@ async function carregarRanking() {
         if (!resposta.ok) throw new Error("Rota ainda não criada");
         dadosRanking = await resposta.json();
     } catch (erro) {
-        // Dados simulados (Mock) se o Redis estiver desligado
+        // Dados simulados caso o servidor/Redis ainda esteja desligado
         dadosRanking = [
             { nome: "Ana Bonfim", pontos: 1450 },
             { nome: "Carlos Silva", pontos: 1200 },
@@ -205,6 +200,7 @@ async function carregarRanking() {
     mostrarRanking(dadosRanking);
 }
 
+// 5. MOSTRAR RANKING NA TELA
 function mostrarRanking(ranking) {
     listaRanking.innerHTML = "";
 
@@ -213,7 +209,7 @@ function mostrarRanking(ranking) {
         return;
     }
 
-    ranking.forEach((nadador, index) => {
+    ranking.forEach(function(nadador, index) {
         const item = document.createElement("div");
         item.className = "item-ranking";
         item.textContent = `${index + 1}º lugar — ${nadador.nome}: ${nadador.pontos} pts`;
@@ -221,5 +217,6 @@ function mostrarRanking(ranking) {
     });
 }
 
-// Chama o ranking ao abrir a página
+// INICIALIZA TUDO AO ABRIR A PÁGINA
+carregarTreinos();
 carregarRanking();
