@@ -181,3 +181,41 @@ function mostrarHistorico() {
 
 // CARREGAR AUTOMATICAMENTE AO ABRIR A PÁGINA
 carregarTreinos();
+
+const RANKING_URL = "http://localhost:3000/api/ranking";
+const listaRanking = document.getElementById("listaRanking");
+
+async function carregarRanking() {
+    let dadosRanking = [];
+
+    try {
+        const resposta = await fetch(RANKING_URL);
+        if (!resposta.ok) throw new Error("Rota ainda não criada");
+        dadosRanking = await resposta.json();
+    } catch (erro) {
+        // Dados simulados (Mock) enquanto o colega do Redis não finaliza a rota
+        dadosRanking = [
+            { nome: "Ana Bonfim", pontos: 1450 },
+            { nome: "Carlos Silva", pontos: 1200 },
+            { nome: "Mariana Costa", pontos: 980 },
+            { nome: "Pedro Alves", pontos: 750 }
+        ];
+    }
+
+    mostrarRanking(dadosRanking);
+}
+
+function mostrarRanking(ranking) {
+    listaRanking.innerHTML = "";
+
+    ranking.forEach((nadador, index) => {
+        const item = document.createElement("div");
+        item.className = "item-ranking";
+        item.textContent = `${index + 1}º lugar — ${nadador.nome}: ${nadador.pontos} pts`;
+        listaRanking.appendChild(item);
+    });
+}
+
+// Chama o ranking ao abrir a página
+carregarRanking();
+
