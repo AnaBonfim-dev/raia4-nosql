@@ -193,7 +193,7 @@ async function carregarRanking() {
         if (!resposta.ok) throw new Error("Rota ainda não criada");
         dadosRanking = await resposta.json();
     } catch (erro) {
-        // Dados simulados (Mock) enquanto o colega do Redis não finaliza a rota
+        // Dados simulados (Mock) se o Redis estiver desligado
         dadosRanking = [
             { nome: "Ana Bonfim", pontos: 1450 },
             { nome: "Carlos Silva", pontos: 1200 },
@@ -208,6 +208,11 @@ async function carregarRanking() {
 function mostrarRanking(ranking) {
     listaRanking.innerHTML = "";
 
+    if (ranking.length === 0) {
+        listaRanking.textContent = "Nenhum nadador pontuou ainda.";
+        return;
+    }
+
     ranking.forEach((nadador, index) => {
         const item = document.createElement("div");
         item.className = "item-ranking";
@@ -218,4 +223,3 @@ function mostrarRanking(ranking) {
 
 // Chama o ranking ao abrir a página
 carregarRanking();
-
