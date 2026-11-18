@@ -210,7 +210,7 @@ async function carregarRanking() {
         dadosRanking = [
             { nome: "Ana Bonfim", pontos: 1450 },
             { nome: "Alberto Cordeiro", pontos: 1200 },
-            { nome: "Hilton Tauan", pontos: 980 },
+            { nome: "Hilton Thauan", pontos: 980 },
             { nome: "Otavio Nascimento", pontos: 750 }
         ];
     }
