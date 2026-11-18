@@ -13,6 +13,12 @@ app.use(express.json());
 // Importar as rotas de treinos
 const treinosRoutes = require("./routes/treinos");
 
+const rankingRoutes = require("./routes/ranking");
+
+// Adicione esta linha logo abaixo da rota de treinos:
+app.use("/api/ranking", rankingRoutes);
+
+
 // Rota inicial
 app.get("/", (req, res) => {
     res.send("SwimTrack API funcionando!");
