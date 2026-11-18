@@ -1,3 +1,20 @@
+// 0. VERIFICAÇÃO DE LOGIN E DADOS DO USUÁRIO
+const usuarioLogado = JSON.parse(localStorage.getItem("swimtrack_usuario"));
+
+if (!usuarioLogado) {
+    window.location.href = "login.html";
+} else {
+    const infoUsuario = document.getElementById("infoUsuario");
+    if (infoUsuario) {
+        infoUsuario.innerHTML = `Olá, <strong>${usuarioLogado.nome}</strong> | <button id="btnSair" type="button" style="width: auto; padding: 4px 12px; margin-left: 8px; cursor: pointer;">Sair</button>`;
+
+        document.getElementById("btnSair").addEventListener("click", function () {
+            localStorage.removeItem("swimtrack_usuario");
+            window.location.href = "login.html";
+        });
+    }
+}
+
 const API_URL = "http://localhost:3000/api/treinos";
 const RANKING_URL = "http://localhost:3000/api/ranking";
 
@@ -28,10 +45,11 @@ async function carregarTreinos() {
 }
 
 // 2. CADASTRAR OU ATUALIZAR TREINO
-formulario.addEventListener("submit", async function(event) {
+formulario.addEventListener("submit", async function (event) {
     event.preventDefault();
 
     const treino = {
+        nadador: usuarioLogado ? usuarioLogado.nome : "Nadador",
         distancia: Number(document.getElementById("distancia").value),
         tempo: document.getElementById("tempo").value,
         data: document.getElementById("data").value,
@@ -92,7 +110,7 @@ function mostrarHistorico() {
         return;
     }
 
-    treinos.forEach(function(treino) {
+    treinos.forEach(function (treino) {
         const card = document.createElement("div");
         card.className = "card-treino";
 
@@ -114,7 +132,7 @@ function mostrarHistorico() {
         editar.className = "btn-editar";
         editar.textContent = "Editar treino";
 
-        editar.addEventListener("click", function() {
+        editar.addEventListener("click", function () {
             document.getElementById("distancia").value = treino.distancia;
             document.getElementById("tempo").value = treino.tempo;
             document.getElementById("data").value = String(treino.data).slice(0, 10);
@@ -136,7 +154,7 @@ function mostrarHistorico() {
         excluir.className = "btn-excluir";
         excluir.textContent = "Excluir treino";
 
-        excluir.addEventListener("click", async function() {
+        excluir.addEventListener("click", async function () {
             const confirmar = confirm("Deseja realmente excluir este treino?");
 
             if (!confirmar) {
@@ -191,9 +209,9 @@ async function carregarRanking() {
         // Dados simulados caso o servidor/Redis ainda esteja desligado
         dadosRanking = [
             { nome: "Ana Bonfim", pontos: 1450 },
-            { nome: "Carlos Silva", pontos: 1200 },
-            { nome: "Mariana Costa", pontos: 980 },
-            { nome: "Pedro Alves", pontos: 750 }
+            { nome: "Alberto Cordeiro", pontos: 1200 },
+            { nome: "Hilton Tauan", pontos: 980 },
+            { nome: "Otavio Nascimento", pontos: 750 }
         ];
     }
 
@@ -209,7 +227,7 @@ function mostrarRanking(ranking) {
         return;
     }
 
-    ranking.forEach(function(nadador, index) {
+    ranking.forEach(function (nadador, index) {
         const item = document.createElement("div");
         item.className = "item-ranking";
         item.textContent = `${index + 1}º lugar — ${nadador.nome}: ${nadador.pontos} pts`;
