@@ -20,7 +20,7 @@ alternarModo.addEventListener("click", function(e) {
         btnAcesso.textContent = "Cadastrar";
         alternarModo.textContent = "Já tem conta? Faça login";
     } else {
-        tituloAcesso.textContent = "Entrar no SwimTrack";
+        tituloAcesso.textContent = "Entrar no Raia 4";
         campoNomeGrupo.style.display = "none";
         document.getElementById("nome").required = false;
         btnAcesso.textContent = "Entrar";
@@ -54,7 +54,7 @@ formLogin.addEventListener("submit", async function(e) {
         const usuario = await resposta.json();
 
         // Salva o usuário logado no navegador
-        localStorage.setItem("swimtrack_usuario", JSON.stringify(usuario));
+        localStorage.setItem("raia4_usuario", JSON.stringify(usuario));
         window.location.href = "index.html";
 
     } catch (erro) {
@@ -64,7 +64,7 @@ formLogin.addEventListener("submit", async function(e) {
                 nome: nome || email.split("@")[0],
                 email: email
             };
-            localStorage.setItem("swimtrack_usuario", JSON.stringify(usuarioSimulado));
+            localStorage.setItem("raia4_usuario", JSON.stringify(usuarioSimulado));
             window.location.href = "index.html";
             return;
         }
