@@ -1,0 +1,60 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SwimTrack | Meus Treinos</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <header>
+        <h1>SwimTrack</h1>
+        <p>Acompanhe sua evolução na natação</p>
+    </header>
+
+    <main>
+        <section>
+            <h2>Cadastrar treino</h2>
+
+            <form id="formTreino">
+
+                <label for="distancia">Distância (metros)</label>
+                <input type="number" id="distancia" placeholder="Ex: 1000" required>
+
+                <label for="tempo">Tempo do treino</label>
+                <input type="text" id="tempo" placeholder="Ex: 00:30:00" required>
+
+                <label for="data">Data do treino</label>
+                <input type="date" id="data" required>
+
+                <label for="tipo">Tipo de treino</label>
+                <select id="tipo" required>
+                    <option value="">Selecione</option>
+                    <option value="Livre">Livre</option>
+                    <option value="Técnico">Técnico</option>
+                    <option value="Resistência">Resistência</option>
+                    <option value="Velocidade">Velocidade</option>
+                </select>
+
+                <label for="observacoes">Observações</label>
+                <textarea id="observacoes" placeholder="Descreva como foi seu treino"></textarea>
+
+                <button type="submit">Salvar treino</button>
+
+            </form>
+        </section>
+
+        <section>
+            <h2>Histórico de treinos</h2>
+
+            <div id="historico">
+                <p>Nenhum treino cadastrado ainda.</p>
+            </div>
+        </section>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+</html>
