@@ -1,4 +1,4 @@
-
+const redisClient = require("../redisClient");
 const express = require("express");
 const router = express.Router();
 
@@ -10,6 +10,14 @@ router.post("/", async (req, res) => {
         const novoTreino = new Treino(req.body);
 
         const treinoSalvo = await novoTreino.save();
+
+        // Exemplo de regra: cada 100 metros nadados valem 10 pontos
+        const pontosGanhos = Math.floor(treinoSalvo.distancia / 10);
+        const nomeNadador = req.body.nadador || "Ana Bonfim";
+
+        // Soma os pontos automaticamente no ranking do Redis
+        await redisClient.zIncrBy("ranking_nadadores", pontosGanhos, nomeNadador);
+
 
         res.status(201).json(treinoSalvo);
     } catch (erro) {
