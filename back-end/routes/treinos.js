@@ -4,20 +4,15 @@ const router = express.Router();
 
 const Treino = require("../treino");
 
-// CADASTRAR TREINO
+// cadastra treino
 router.post("/", async (req, res) => {
     try {
         const novoTreino = new Treino(req.body);
-
         const treinoSalvo = await novoTreino.save();
-
-        // Exemplo de regra: cada 100 metros nadados valem 10 pontos
         const pontosGanhos = Math.floor(treinoSalvo.distancia / 10);
         const nomeNadador = req.body.nadador || "Ana Bonfim";
 
-        // Soma os pontos automaticamente no ranking do Redis
         await redisClient.zIncrBy("ranking_nadadores", pontosGanhos, nomeNadador);
-
 
         res.status(201).json(treinoSalvo);
     } catch (erro) {
@@ -25,7 +20,7 @@ router.post("/", async (req, res) => {
     }
 });
 
-// LISTAR TODOS OS TREINOS
+// aqui lista os treinos
 router.get("/", async (req, res) => {
     try {
         const treinos = await Treino.find();
@@ -36,7 +31,7 @@ router.get("/", async (req, res) => {
     }
 });
 
-// BUSCAR TREINO POR ID
+// aqui busca o treino por id
 router.get("/:id", async (req, res) => {
     try {
         const treino = await Treino.findById(req.params.id);
@@ -51,7 +46,7 @@ router.get("/:id", async (req, res) => {
     }
 });
 
-// EDITAR TREINO
+
 router.put("/:id", async (req, res) => {
     try {
         const treino = await Treino.findByIdAndUpdate(
@@ -70,7 +65,7 @@ router.put("/:id", async (req, res) => {
     }
 });
 
-// EXCLUIR TREINO
+
 router.delete("/:id", async (req, res) => {
     try {
         const treino = await Treino.findByIdAndDelete(req.params.id);
