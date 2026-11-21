@@ -3,40 +3,40 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Acesso-Raia4</title>
+    <title>Faça login no Raia 4</title>
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
+    <link rel="shortcut icon" href="img/raia4-favicon.png" type="image/x-icon">
 </head>
 <body>
+    <div class="login-shell">
+        <div class="login-card">
+            <div class="login-header">
+                <img src="img/logo-raia4.png" alt="Logo Raia 4" class="login-logo">
+            </div>
 
-    <header>
-        <h1>Raia 4</h1>
-        <p>Faça login ou cadastre-se</p>
-    </header>
-
-    <main class="container-login">
-        <section>
-            <h2 id="tituloAcesso">Entrar no Raia 4</h2>
-
-            <form id="formLogin">
-                <div id="campoNomeGrupo" style="display: none;">
+            <form id="formLogin" style="display: flex; flex-direction: column; gap: 14px;">
+                <div class="field" id="campoNomeGrupo" style="display: none;">
                     <label for="nome">Nome do Nadador</label>
                     <input type="text" id="nome" placeholder="Ex: Ana Bonfim">
                 </div>
 
-                <label for="email">E-mail</label>
-                <input type="email" id="email" placeholder="seu@email.com" required>
+                <div class="field">
+                    <label for="email">E-mail</label>
+                    <input type="email" id="email" placeholder="seu@email.com" required>
+                </div>
 
-                <label for="senha">Senha</label>
-                <input type="password" id="senha" placeholder="******" required>
+                <div class="field">
+                    <label for="senha">Senha</label>
+                    <input type="password" id="senha" placeholder="••••••" required>
+                </div>
 
-                <button type="submit" id="btnAcesso">Entrar</button>
+                <button type="submit" id="btnAcesso" class="submit-button">Entrar</button>
             </form>
 
-            <p style="margin-top: 15px; text-align: center;">
-                <a href="#" id="alternarModo">Não tem conta? Cadastre-se aqui</a>
-            </p>
-        </section>
-    </main>
+            <a href="#" id="alternarModo" class="login-switch">Não tem conta? Cadastre-se aqui</a>
+        </div>
+    </div>
 
     <script src="login.js"></script>
 </body>
