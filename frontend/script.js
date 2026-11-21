@@ -1,240 +1,322 @@
-// 0. VERIFICAÇÃO DE LOGIN E DADOS DO USUÁRIO
-const usuarioLogado = JSON.parse(localStorage.getItem("swimtrack_usuario"));
+'use strict';
 
+let workouts = [];
+let ranking = [];
+let editingId = null;
+let idParaExcluir = null;
+
+const usuarioLogado = JSON.parse(localStorage.getItem('raia4_usuario'));
 if (!usuarioLogado) {
-    window.location.href = "login.html";
-} else {
-    const infoUsuario = document.getElementById("infoUsuario");
-    if (infoUsuario) {
-        infoUsuario.innerHTML = `Olá, <strong>${usuarioLogado.nome}</strong> | <button id="btnSair" type="button" style="width: auto; padding: 4px 12px; margin-left: 8px; cursor: pointer;">Sair</button>`;
-
-        document.getElementById("btnSair").addEventListener("click", function () {
-            localStorage.removeItem("swimtrack_usuario");
-            window.location.href = "login.html";
-        });
-    }
+    window.location.href = 'login.html';
 }
 
-const API_URL = "http://localhost:3000/api/treinos";
-const RANKING_URL = "http://localhost:3000/api/ranking";
+const API_URL = 'http://localhost:3000/api/treinos';
+const RANKING_URL = 'http://localhost:3000/api/ranking';
 
-const formulario = document.getElementById("formTreino");
-const historico = document.getElementById("historico");
-const listaRanking = document.getElementById("listaRanking");
-const botaoSalvar = document.querySelector("#formTreino button");
+function escapeHTML(value) {
+    return String(value).replace(/[&<>"']/g, (character) => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;'
+    })[character]);
+}
 
-let treinos = [];
-let editandoId = null;
+function mostrarAviso(mensagem, ehErro = false) {
+    const toast = document.getElementById('toastAviso');
+    if (!toast) return;
 
-// 1. CARREGAR TREINOS DO MONGODB
+    toast.textContent = mensagem;
+    toast.classList.toggle('erro', ehErro);
+    toast.hidden = false;
+
+    setTimeout(() => {
+        toast.hidden = true;
+    }, 3500);
+}
+
+const form = document.getElementById('formTreino');
+const distanceInput = document.getElementById('distancia');
+const timeInput = document.getElementById('tempo');
+const dateInput = document.getElementById('data');
+const typeInput = document.getElementById('tipo');
+const noteInput = document.getElementById('observacoes');
+const historyList = document.getElementById('listaHistorico');
+const rankingList = document.getElementById('listaRanking');
+const formTitle = document.getElementById('form-title');
+const submitButton = form.querySelector('.submit-button');
+
+// aqui configura o perfil e o botão de sair
+const profileBtn = document.querySelector('.profile-button');
+if (profileBtn && usuarioLogado) {
+    const iniciais = usuarioLogado.nome
+        .split(' ')
+        .map(n => n)
+        .join('')
+        .slice(0, 2)
+        .toUpperCase();
+
+    const userControls = document.createElement('div');
+    userControls.className = 'user-controls';
+    userControls.innerHTML = `
+        <div class="user-badge">
+            <span class="user-avatar">${iniciais}</span>
+            <span class="user-name-text">${usuarioLogado.nome}</span>
+        </div>
+        <button type="button" id="btnSair" class="logout-button" title="Sair da conta">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                <polyline points="16 17 21 12 16 7"/>
+                <line x1="21" y1="12" x2="9" y2="12"/>
+            </svg>
+            Sair
+        </button>
+    `;
+
+    profileBtn.replaceWith(userControls);
+
+         document.addEventListener('click', (event) => {
+        const modalSair = document.getElementById('modalSair');
+        if (!modalSair) return;
+
+        if (event.target.closest('#btnSair')) {
+            modalSair.hidden = false;
+        }
+
+        if (event.target.id === 'btnCancelarSair' || event.target === modalSair) {
+            modalSair.hidden = true;
+        }
+
+        if (event.target.id === 'btnConfirmarSair') {
+            localStorage.removeItem('raia4_usuario');
+            window.location.href = 'login.html';
+        }
+
+                const modalExcluir = document.getElementById('modalExcluir');
+        if (modalExcluir) {
+            if (event.target.id === 'btnCancelarExcluir' || event.target === modalExcluir) {
+                modalExcluir.hidden = true;
+                idParaExcluir = null;
+            }
+
+            if (event.target.id === 'btnConfirmarExcluir' && idParaExcluir) {
+                modalExcluir.hidden = true;
+                fetch(`${API_URL}/${idParaExcluir}`, { method: 'DELETE' })
+                    .then((res) => {
+                        if (!res.ok) throw new Error('Erro ao excluir');
+                        mostrarAviso('Treino excluído com sucesso!');
+                        carregarTreinos();
+                    })
+                    .catch((erro) => mostrarAviso('Erro ao excluir: ' + erro.message, true))
+                    .finally(() => {
+                        idParaExcluir = null;
+                    });
+            }
+        }
+    });
+}
+
+// busca os treinos no mongodb
 async function carregarTreinos() {
     try {
         const resposta = await fetch(API_URL);
-
-        if (!resposta.ok) {
-            throw new Error("Não foi possível carregar os treinos.");
-        }
-
-        treinos = await resposta.json();
-        mostrarHistorico();
-
+        if (!resposta.ok) throw new Error('Erro ao carregar treinos');
+        workouts = await resposta.json();
     } catch (erro) {
-        console.error("Erro:", erro);
-        historico.textContent = "Erro ao carregar os treinos. Verifique o servidor.";
+        console.error('Erro ao conectar com MongoDB:', erro);
+        workouts = [];
     }
+    renderStats();
+    renderHistory();
 }
 
-// 2. CADASTRAR OU ATUALIZAR TREINO
-formulario.addEventListener("submit", async function (event) {
+// busca o ranking do redis
+async function carregarRanking() {
+    try {
+        const resposta = await fetch(RANKING_URL);
+        if (!resposta.ok) throw new Error('Erro ao carregar ranking');
+        ranking = await resposta.json();
+    } catch (erro) {
+        console.error('Erro ao conectar com Redis:', erro);
+        ranking = [];
+    }
+    renderRanking();
+    renderStats();
+}
+
+function renderStats() {
+    const totalDistance = workouts.reduce((sum, w) => sum + Number(w.distancia || 0), 0);
+    const elDist = document.getElementById('distanciaTotal');
+    const elTreinos = document.getElementById('treinosRealizados');
+
+    if (elDist) elDist.innerHTML = `${totalDistance.toLocaleString('pt-BR')} <span>m</span>`;
+    if (elTreinos) elTreinos.innerHTML = `${workouts.length}<span class="unit-label"> sessões</span>`;
+}
+
+function renderHistory() {
+    if (!workouts.length) {
+        historyList.innerHTML = '<p class="empty-state">Ainda não há treinos no banco. Registre sua próxima sessão.</p>';
+        return;
+    }
+
+    historyList.innerHTML = workouts.map((workout) => {
+        const dataStr = String(workout.data).slice(0, 10);
+        const formattedDate = new Date(`${dataStr}T12:00:00`).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' });
+
+        return `
+        <article class="workout-card" data-workout-id="${workout._id}">
+            <div class="workout-info">
+                <div class="workout-title-row">
+                    <h3>${Number(workout.distancia).toLocaleString('pt-BR')} <span>m</span></h3>
+                    <span class="workout-tag">${escapeHTML(workout.tipo)}</span>
+                </div>
+                <p class="workout-meta">
+                    <span class="workout-time numeric-value">${escapeHTML(workout.tempo)}</span>
+                    <span class="workout-date numeric-value">${escapeHTML(formattedDate)}</span>
+                </p>
+                ${workout.observacoes ? `<p class="workout-note">${escapeHTML(workout.observacoes)}</p>` : ''}
+            </div>
+            <div class="workout-actions">
+                <button type="button" data-action="edit" aria-label="Editar treino">${editIcon()}</button>
+                <button type="button" data-action="delete" aria-label="Excluir treino">${trashIcon()}</button>
+            </div>
+        </article>`;
+    }).join('');
+}
+
+function renderRanking() {
+    if (!ranking.length) {
+        rankingList.innerHTML = '<p class="empty-state">Nenhum nadador pontuou no Redis ainda.</p>';
+        return;
+    }
+
+    rankingList.innerHTML = ranking.map((swimmer, index) => {
+        const iniciais = swimmer.nome.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
+        const souEu = usuarioLogado && swimmer.nome.toLowerCase() === usuarioLogado.nome.toLowerCase();
+
+        return `
+        <div class="ranking-row rank-${index + 1}">
+            <span class="ranking-position numeric-value">${String(index + 1).padStart(2, '0')}</span>
+            <span class="avatar">${escapeHTML(iniciais)}</span>
+            <span class="swimmer-name">${escapeHTML(swimmer.nome)}${souEu ? '<small>Você</small>' : ''}</span>
+            <span class="points numeric-value ${index === 0 ? 'positive-value' : ''}">${Number(swimmer.pontos).toLocaleString('pt-BR')} <small>pts</small></span>
+        </div>`;
+    }).join('');
+}
+
+function editIcon() {
+    return '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 5 4 4M4 20l4-.8L19 8a2.8 2.8 0 0 0-4-4L4 15z"/></svg>';
+}
+
+function trashIcon() {
+    return '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18M8 6V4h8v2m3 0-1 14H6L5 6m4 4v6m6-6v6"/></svg>';
+}
+
+function resetForm() {
+    form.reset();
+    typeInput.value = 'Livre';
+    editingId = null;
+    if (formTitle) formTitle.textContent = 'Registrar treino';
+    submitButton.textContent = 'Salvar treino';
+}
+
+form.addEventListener('submit', async (event) => {
     event.preventDefault();
 
-    const treino = {
-        nadador: usuarioLogado ? usuarioLogado.nome : "Nadador",
-        distancia: Number(document.getElementById("distancia").value),
-        tempo: document.getElementById("tempo").value,
-        data: document.getElementById("data").value,
-        tipo: document.getElementById("tipo").value,
-        observacoes: document.getElementById("observacoes").value
+    const treinoPayload = {
+        nadador: usuarioLogado ? usuarioLogado.nome : 'Ana Bonfim',
+        distancia: Number(distanceInput.value),
+        tempo: timeInput.value.trim(),
+        data: dateInput.value,
+        tipo: typeInput.value,
+        observacoes: noteInput.value.trim()
     };
 
     try {
         let resposta;
-
-        if (editandoId === null) {
-            // CADASTRAR
-            resposta = await fetch(API_URL, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify(treino)
+        if (editingId !== null) {
+            resposta = await fetch(`${API_URL}/${editingId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(treinoPayload)
             });
         } else {
-            // ATUALIZAR
-            resposta = await fetch(`${API_URL}/${editandoId}`, {
-                method: "PUT",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify(treino)
+            resposta = await fetch(API_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(treinoPayload)
             });
         }
 
         if (!resposta.ok) {
             const erro = await resposta.json();
-            throw new Error(erro.erro || "Erro ao salvar treino.");
+            throw new Error(erro.erro || 'Erro ao salvar treino');
         }
 
-        formulario.reset();
-        editandoId = null;
-        botaoSalvar.textContent = "Salvar treino";
-
-        // Atualiza o histórico e o ranking na hora
+        resetForm();
         await carregarTreinos();
         await carregarRanking();
-
-        alert("Treino salvo com sucesso!");
-
+        mostrarAviso('Treino salvo no MongoDB e pontos atualizados no Redis!');
     } catch (erro) {
-        console.error("Erro:", erro);
-        alert("Não foi possível salvar o treino: " + erro.message);
+        mostrarAviso('Erro ao salvar: ' + erro.message, true);
     }
 });
 
-// 3. MOSTRAR HISTÓRICO NA TELA
-function mostrarHistorico() {
-    historico.innerHTML = "";
+historyList.addEventListener('click', async (event) => {
+    const button = event.target.closest('button[data-action]');
+    if (!button) return;
 
-    if (treinos.length === 0) {
-        historico.textContent = "Nenhum treino cadastrado ainda.";
+    const card = button.closest('[data-workout-id]');
+    const id = card.dataset.workoutId;
+    const workout = workouts.find((item) => item._id === id);
+    if (!workout) return;
+
+    if (button.dataset.action === 'delete') {
+        idParaExcluir = id;
+        const modalExcluir = document.getElementById('modalExcluir');
+        if (modalExcluir) modalExcluir.hidden = false;
         return;
     }
 
-    treinos.forEach(function (treino) {
-        const card = document.createElement("div");
-        card.className = "card-treino";
 
-        const titulo = document.createElement("h3");
-        titulo.textContent = treino.distancia + " metros";
+    editingId = workout._id;
+    distanceInput.value = String(workout.distancia);
+    timeInput.value = workout.tempo;
+    dateInput.value = String(workout.data).slice(0, 10);
+    typeInput.value = workout.tipo;
+    noteInput.value = workout.observacoes || '';
 
-        const detalhes = document.createElement("p");
-        detalhes.textContent = "Tempo: " + treino.tempo + " | Tipo: " + treino.tipo;
+    if (formTitle) formTitle.textContent = 'Editar treino';
+    submitButton.textContent = 'Atualizar treino';
+    activateTab('register');
+    distanceInput.focus();
+});
 
-        const data = document.createElement("p");
-        data.textContent = "Data: " + String(treino.data).slice(0, 10);
-
-        const observacoes = document.createElement("p");
-        observacoes.textContent = "Observações: " + (treino.observacoes || "Nenhuma");
-
-        // BOTÃO EDITAR
-        const editar = document.createElement("button");
-        editar.type = "button";
-        editar.className = "btn-editar";
-        editar.textContent = "Editar treino";
-
-        editar.addEventListener("click", function () {
-            document.getElementById("distancia").value = treino.distancia;
-            document.getElementById("tempo").value = treino.tempo;
-            document.getElementById("data").value = String(treino.data).slice(0, 10);
-            document.getElementById("tipo").value = treino.tipo;
-            document.getElementById("observacoes").value = treino.observacoes || "";
-
-            editandoId = treino._id;
-            botaoSalvar.textContent = "Atualizar treino";
-
-            window.scrollTo({
-                top: 0,
-                behavior: "smooth"
-            });
-        });
-
-        // BOTÃO EXCLUIR
-        const excluir = document.createElement("button");
-        excluir.type = "button";
-        excluir.className = "btn-excluir";
-        excluir.textContent = "Excluir treino";
-
-        excluir.addEventListener("click", async function () {
-            const confirmar = confirm("Deseja realmente excluir este treino?");
-
-            if (!confirmar) {
-                return;
-            }
-
-            try {
-                const resposta = await fetch(`${API_URL}/${treino._id}`, {
-                    method: "DELETE"
-                });
-
-                if (!resposta.ok) {
-                    const erro = await resposta.json();
-                    throw new Error(erro.erro || "Erro ao excluir treino.");
-                }
-
-                if (editandoId === treino._id) {
-                    editandoId = null;
-                    formulario.reset();
-                    botaoSalvar.textContent = "Salvar treino";
-                }
-
-                await carregarTreinos();
-                alert("Treino excluído com sucesso!");
-
-            } catch (erro) {
-                console.error("Erro:", erro);
-                alert("Não foi possível excluir o treino: " + erro.message);
-            }
-        });
-
-        card.appendChild(titulo);
-        card.appendChild(detalhes);
-        card.appendChild(data);
-        card.appendChild(observacoes);
-        card.appendChild(editar);
-        card.appendChild(excluir);
-
-        historico.appendChild(card);
+// controle de abas
+function activateTab(tabName) {
+    const tabs = [
+        { name: 'register', button: document.getElementById('tab-register'), panel: document.getElementById('painel-cadastro') },
+        { name: 'history', button: document.getElementById('tab-history'), panel: document.getElementById('historico') },
+        { name: 'ranking', button: document.getElementById('tab-ranking'), panel: document.getElementById('secao-ranking') }
+    ];
+    tabs.forEach(({ name, button, panel }) => {
+        if (!button || !panel) return;
+        const isActive = name === tabName;
+        button.classList.toggle('is-active', isActive);
+        button.setAttribute('aria-selected', String(isActive));
+        panel.hidden = !isActive;
     });
 }
 
-// 4. CARREGAR RANKING DO REDIS
-async function carregarRanking() {
-    let dadosRanking = [];
-
-    try {
-        const resposta = await fetch(RANKING_URL);
-        if (!resposta.ok) throw new Error("Rota ainda não criada");
-        dadosRanking = await resposta.json();
-    } catch (erro) {
-        // Dados simulados caso o servidor/Redis ainda esteja desligado
-        dadosRanking = [
-            { nome: "Ana Bonfim", pontos: 1450 },
-            { nome: "Alberto Cordeiro", pontos: 1200 },
-            { nome: "Hilton Thauan", pontos: 980 },
-            { nome: "Otavio Nascimento", pontos: 750 }
-        ];
-    }
-
-    mostrarRanking(dadosRanking);
-}
-
-// 5. MOSTRAR RANKING NA TELA
-function mostrarRanking(ranking) {
-    listaRanking.innerHTML = "";
-
-    if (ranking.length === 0) {
-        listaRanking.textContent = "Nenhum nadador pontuou ainda.";
-        return;
-    }
-
-    ranking.forEach(function (nadador, index) {
-        const item = document.createElement("div");
-        item.className = "item-ranking";
-        item.textContent = `${index + 1}º lugar — ${nadador.nome}: ${nadador.pontos} pts`;
-        listaRanking.appendChild(item);
+const tabsWrap = document.querySelector('.tabs-wrap');
+if (tabsWrap) {
+    tabsWrap.addEventListener('click', (event) => {
+        const tab = event.target.closest('[role="tab"]');
+        if (!tab) return;
+        activateTab(tab.id.replace('tab-', ''));
     });
 }
 
-// INICIALIZA TUDO AO ABRIR A PÁGINA
 carregarTreinos();
 carregarRanking();
