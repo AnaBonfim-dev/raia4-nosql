@@ -1,71 +1,187 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt-BR">
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Raia 4</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#080E17">
+    <meta name="description" content="Registre treinos, acompanhe seu histórico e consulte o ranking da RAIA 4.">
+    <title>RAIA 4</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;650;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
+    <link rel="shortcut icon" href="img/raia4-favicon.png" type="image/x-icon">
+    <script src="script.js" defer>
+    </script>
 </head>
 
 <body>
+    <div class="app-shell">
+        <header class="topbar">
+            <div class="topbar-inner">
+                <a href="index.html" class="brand">
+                    <img src="img/logo-raia4.png" alt="Raia 4" class="topbar-logo">
+                </a>
 
-    <header>
-        <h1>Raia 4</h1>
-        <p>Acompanhe sua evolução na natação</p>
-        <div id="infoUsuario" style="margin-top: 12px;"></div>
-    </header>
-
-    <main>
-        <section>
-            <h2>Cadastrar treino</h2>
-
-            <form id="formTreino">
-
-                <label for="distancia">Distância (metros)</label>
-                <input type="number" id="distancia" placeholder="Ex: 1000" required>
-
-                <label for="tempo">Tempo do treino</label>
-                <input type="text" id="tempo" placeholder="Ex: 00:30:00" required>
-
-                <label for="data">Data do treino</label>
-                <input type="date" id="data" required>
-
-                <label for="tipo">Tipo de treino</label>
-                <select id="tipo" required>
-                    <option value="">Selecione</option>
-                    <option value="Livre">Livre</option>
-                    <option value="Técnico">Técnico</option>
-                    <option value="Resistência">Resistência</option>
-                    <option value="Velocidade">Velocidade</option>
-                </select>
-
-                <label for="observacoes">Observações</label>
-                <textarea id="observacoes" placeholder="Descreva como foi seu treino"></textarea>
-
-                <button type="submit">Salvar treino</button>
-
-            </form>
-        </section>
-
-        <section>
-            <h2>Histórico de treinos</h2>
-
-            <div id="historico">
-                <p>Nenhum treino cadastrado ainda.</p>
+                <button type="button" class="profile-button">
+                    <span>AB</span>
+                    <span>Ana Bonfim</span>
+                </button>
             </div>
-        </section>
+        </header>
 
-        <section id="secao-ranking">
-            <h2>Ranking em Tempo Real</h2>
-            <div id="listaRanking">
-                <p>Carregando ranking...</p>
+        <nav class="tabs-wrap" role="tablist" aria-label="Seções da RAIA 4">
+            <button id="tab-register" class="tab-button is-active" type="button" role="tab" aria-selected="true">
+            <i class='bx bx-plus-circle'> </i> Registrar treino
+            </button>
+            <button id="tab-history" class="tab-button" type="button" role="tab" aria-selected="false">
+            <i class='bx bx-history'></i> Histórico
+            </button>
+            <button id="tab-ranking" class="tab-button" type="button" role="tab" aria-selected="false"> 
+            <i class='bx bx-trophy'></i> Ranking
+            </button>
+        </nav>
+        <main id="inicio">
+            <section class="stats-grid" aria-label="Resumo da atividade">
+                <article class="stat-card">
+                    <div class="stat-top">
+                        <span class="stat-label">Distância total</span>
+                        <i class='bx bx-water stat-icon'></i>
+                    </div>
+                    <p class="stat-value metric-value" id="distanciaTotal">5.400 <span>m</span>
+                    </p>
+                </article>
+                <article class="stat-card">
+                    <div class="stat-top">
+                        <span class="stat-label">Treinos realizados</span>
+                        <i class='bx bx-check-circle stat-icon'></i>
+                    </div>
+                    <p class="stat-value metric-value" id="treinosRealizados">3<span class="unit-label"> sessões</span>
+                    </p>
+                </article>
+                <article class="stat-card">
+                    <div class="stat-top">
+                        <span class="stat-label">Tempo na água</span>
+                        <i class='bx bx-time-five stat-icon'></i>
+                    </div>
+                    <p class="stat-value metric-value">0<span>h</span>00<span>min</span>
+                    </p>
+                </article>
+                <article class="stat-card">
+                    <div class="stat-top">
+                        <span class="stat-label">Sua posição</span>
+                        <i class='bx bx-medal stat-icon'></i>
+                    </div>
+                    <p class="stat-value metric-value">#<span class="rank-number">0</span>
+                        <span class="unit-label"> no ranking</span>
+                    </p>
+                </article>
+            </section>
+            <div class="tab-panels">
+                <section id="painel-cadastro" class="panel form-panel tab-panel" role="tabpanel"
+                    aria-labelledby="tab-register">
+                    <div class="panel-heading">
+                        <div>
+                            <h2 id="form-title">Registrar treino</h2>
+                        </div>
+                    </div>
+                    <form id="formTreino">
+                        <div class="field-grid">
+                            <div class="field">
+                                <label for="distancia">Distância <span>(metros)</span>
+                                </label>
+                                <div class="input-wrap">
+                                    <input id="distancia" name="distancia" type="number" min="1"
+                                        placeholder="Ex.: 1.500" required>
+                                    <span class="input-unit">m</span>
+                                </div>
+                            </div>
+                            <div class="field">
+                                <label for="tempo">Tempo total</label>
+                                <div class="input-wrap">
+                                    <input class="time-input" id="tempo" name="tempo" type="text" placeholder="00:35:00" required>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="field-grid">
+                            <div class="field">
+                                <label for="data">Data do treino</label>
+                                <input id="data" name="data" type="date" value="2026-11-18" required>
+                            </div>
+                            <div class="field">
+                                <label for="tipo">Tipo de treino</label>
+                                <select id="tipo" name="tipo">
+                                    <option>Livre</option>
+                                    <option>Técnico</option>
+                                    <option>Resistência</option>
+                                    <option>Velocidade</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="field">
+                            <label for="observacoes">Observações <span class="optional">(opcional)</span>
+                            </label>
+                            <textarea id="observacoes" name="observacoes" rows="3"
+                                placeholder="Como foi seu treino hoje?">
+                            </textarea>
+                        </div>
+                        <button class="submit-button" type="submit">Salvar treino</button>
+                    </form>
+                </section>
+                <section class="panel history-panel tab-panel" id="historico" role="tabpanel"
+                    aria-labelledby="tab-history" hidden>
+                    <div class="panel-heading">
+                        <h2 id="history-title">Histórico de treinos</h2>
+                    </div>
+                    <div class="workout-list" id="listaHistorico">
+                    </div>
+                </section>
+                <section class="panel ranking-panel tab-panel" id="secao-ranking" role="tabpanel"
+                    aria-labelledby="tab-ranking" hidden>
+                    <div class="panel-heading">
+                        <div>
+                            <h2 id="ranking-title">Ranking da semana</h2>
+                        </div>
+                    </div>
+                    <div class="ranking-list" id="listaRanking">
+                    </div>
+                </section>
             </div>
-        </section>
+            <footer class="page-footer">
+                <span class="footer-copyright">© 2026 Raia 4</span>
+                <span class="footer-credit">Desenvolvido por Ana Lis Bonfim, Alberto Cordeiro, Hilton Thauan, John
+                    Barreto e Otávio Nascimento</span>
+            </footer>
+        </main>
+    </div>
+    
+    <div id="modalSair" class="modal-fundo" hidden>
+        <div class="modal-caixa">
+         <h3>Sair da conta</h3>
+          <p>Deseja realmente sair do Raia 4?</p>
+          <div class="modal-botoes">
+              <button type="button" id="btnCancelarSair" class="btn-modal-cancelar">Cancelar</button>
+              <button type="button" id="btnConfirmarSair" class="btn-modal-sair">Sair</button>
+          </div>
+      </div>
+    </div>
+    <div id="modalExcluir" class="modal-fundo" hidden>
+    <div class="modal-caixa">
+        <h3>Excluir treino</h3>
+        <p>Deseja realmente excluir este treino? Essa ação não pode ser desfeita.</p>
+        <div class="modal-botoes">
+            <button type="button" id="btnCancelarExcluir" class="btn-modal-cancelar">Cancelar</button>
+            <button type="button" id="btnConfirmarExcluir" class="btn-modal-sair">Excluir</button>
+        </div>
+    </div>
+    </div>
+    <div id="toastAviso" class="toast-aviso" hidden></div>
 
-    </main>
 
-    <script src="script.js"></script>
+
 </body>
-
 </html>
