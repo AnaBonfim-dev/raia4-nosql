@@ -8,19 +8,19 @@ const alternarModo = document.getElementById("alternarModo");
 
 let modoCadastro = false;
 
-// Alterna entre tela de Login e tela de Cadastro
+// aqui alterna entre a tela de login e a tela de cadastro
 alternarModo.addEventListener("click", function(e) {
     e.preventDefault();
     modoCadastro = !modoCadastro;
 
     if (modoCadastro) {
-        tituloAcesso.textContent = "Criar Conta";
+        if (tituloAcesso) tituloAcesso.textContent = "Criar Conta";
         campoNomeGrupo.style.display = "block";
         document.getElementById("nome").required = true;
         btnAcesso.textContent = "Cadastrar";
         alternarModo.textContent = "Já tem conta? Faça login";
     } else {
-        tituloAcesso.textContent = "Entrar no Raia 4";
+        if (tituloAcesso) tituloAcesso.textContent = "Entrar no Raia 4";
         campoNomeGrupo.style.display = "none";
         document.getElementById("nome").required = false;
         btnAcesso.textContent = "Entrar";
@@ -28,8 +28,8 @@ alternarModo.addEventListener("click", function(e) {
     }
 });
 
-// Envia Login ou Cadastro
-formLogin.addEventListener("submit", async function(e) {
+
+formLogin.addEventListener("submit", async function (e) {
     e.preventDefault();
 
     const email = document.getElementById("email").value;
@@ -53,12 +53,11 @@ formLogin.addEventListener("submit", async function(e) {
 
         const usuario = await resposta.json();
 
-        // Salva o usuário logado no navegador
         localStorage.setItem("raia4_usuario", JSON.stringify(usuario));
         window.location.href = "index.html";
 
     } catch (erro) {
-        // Fallback (Modo Teste): se a rota de usuários ainda não existir no back-end, entra mesmo assim
+        // se a rota de usuários ainda não existir no back-end, entra mesmo assim (aqui é pra teste)
         if (erro.message.includes("Failed to fetch")) {
             const usuarioSimulado = {
                 nome: nome || email.split("@")[0],
