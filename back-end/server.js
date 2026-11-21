@@ -10,24 +10,19 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Importar as rotas de treinos
 const treinosRoutes = require("./routes/treinos");
-
 const rankingRoutes = require("./routes/ranking");
 
-// Adicione esta linha logo abaixo da rota de treinos:
 app.use("/api/ranking", rankingRoutes);
 
-
-// Rota inicial
 app.get("/", (req, res) => {
-    res.send("SwimTrack API funcionando!");
+    res.send("Raia 4 API funcionando!");
 });
 
-// Registrar as rotas
+
 app.use("/api/treinos", treinosRoutes);
 
-// Conectar ao MongoDB
+// conecta no mongodb
 mongoose.connect(process.env.MONGO_URI)
     .then(() => {
         console.log("MongoDB conectado com sucesso!");
@@ -35,7 +30,7 @@ mongoose.connect(process.env.MONGO_URI)
         const PORT = 3000;
 
         app.listen(PORT, () => {
-            console.log(`SwimTrack rodando na porta ${PORT}`);
+            console.log(`Raia 4 rodando na porta ${PORT}`);
         });
     })
     .catch((erro) => {
