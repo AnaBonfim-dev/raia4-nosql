@@ -148,10 +148,34 @@ async function carregarRanking() {
 function renderStats() {
     const totalDistance = workouts.reduce((sum, w) => sum + Number(w.distancia || 0), 0);
     const elDist = document.getElementById('distanciaTotal');
-    const elTreinos = document.getElementById('treinosRealizados');
-
     if (elDist) elDist.innerHTML = `${totalDistance.toLocaleString('pt-BR')} <span>m</span>`;
+
+    const elTreinos = document.getElementById('treinosRealizados');
     if (elTreinos) elTreinos.innerHTML = `${workouts.length}<span class="unit-label"> sessões</span>`;
+
+    let totalSegundos = 0;
+    workouts.forEach((w) => {
+        if (!w.tempo) return;
+        const partes = String(w.tempo).split(':').map(Number);
+        if (partes.length === 3) {
+            totalSegundos += (partes[0] * 3600) + (partes[1] * 60) + partes[2];
+        } else if (partes.length === 2) {
+            totalSegundos += (partes[0] * 60) + partes[1];
+        }
+    });
+    const horas = Math.floor(totalSegundos / 3600);
+    const minutos = Math.floor((totalSegundos % 3600) / 60);
+    const elTempo = document.getElementById('tempoTotal');
+    if (elTempo) elTempo.innerHTML = `${horas}<span>h</span>${String(minutos).padStart(2, '0')}<span>min</span>`;
+
+    const elPosicao = document.getElementById('posicaoRanking');
+    if (elPosicao && usuarioLogado) {
+        const idx = ranking.findIndex(
+            (swimmer) => swimmer.nome.toLowerCase() === usuarioLogado.nome.toLowerCase()
+        );
+        const pos = idx !== -1 ? idx + 1 : 0;
+        elPosicao.innerHTML = `#<span class="rank-number">${pos}</span> <span class="unit-label">no ranking</span>`;
+    }
 }
 
 function renderHistory() {
