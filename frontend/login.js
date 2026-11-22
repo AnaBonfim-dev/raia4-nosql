@@ -8,8 +8,21 @@ const alternarModo = document.getElementById("alternarModo");
 
 let modoCadastro = false;
 
+function mostrarAviso(mensagem, ehErro = false) {
+    const toast = document.getElementById("toastAviso");
+    if (!toast) return;
+
+    toast.textContent = mensagem;
+    toast.classList.toggle("erro", ehErro);
+    toast.hidden = false;
+
+    setTimeout(() => {
+        toast.hidden = true;
+    }, 3500);
+}
+
 // aqui alterna entre a tela de login e a tela de cadastro
-alternarModo.addEventListener("click", function(e) {
+alternarModo.addEventListener("click", function (e) {
     e.preventDefault();
     modoCadastro = !modoCadastro;
 
@@ -27,7 +40,6 @@ alternarModo.addEventListener("click", function(e) {
         alternarModo.textContent = "Não tem conta? Cadastre-se aqui";
     }
 });
-
 
 formLogin.addEventListener("submit", async function (e) {
     e.preventDefault();
@@ -57,16 +69,6 @@ formLogin.addEventListener("submit", async function (e) {
         window.location.href = "index.html";
 
     } catch (erro) {
-        // se a rota de usuários ainda não existir no back-end, entra mesmo assim (aqui é pra teste)
-        if (erro.message.includes("Failed to fetch")) {
-            const usuarioSimulado = {
-                nome: nome || email.split("@")[0],
-                email: email
-            };
-            localStorage.setItem("raia4_usuario", JSON.stringify(usuarioSimulado));
-            window.location.href = "index.html";
-            return;
-        }
-        alert("Erro: " + erro.message);
+        mostrarAviso(erro.message, true);
     }
 });
