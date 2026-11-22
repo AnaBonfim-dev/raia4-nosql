@@ -2,6 +2,12 @@
 const mongoose = require("mongoose");
 
 const treinoSchema = new mongoose.Schema({
+    
+    nadador: {
+        type: String,
+        required: true
+    },
+    
     distancia: {
         type: Number,
         required: true
