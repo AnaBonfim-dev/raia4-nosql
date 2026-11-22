@@ -36,13 +36,13 @@
 
         <nav class="tabs-wrap" role="tablist" aria-label="Seções da RAIA 4">
             <button id="tab-register" class="tab-button is-active" type="button" role="tab" aria-selected="true">
-            <i class='bx bx-plus-circle'> </i> Registrar treino
+                <i class='bx bx-plus-circle'> </i> Registrar treino
             </button>
             <button id="tab-history" class="tab-button" type="button" role="tab" aria-selected="false">
-            <i class='bx bx-history'></i> Histórico
+                <i class='bx bx-history'></i> Histórico
             </button>
-            <button id="tab-ranking" class="tab-button" type="button" role="tab" aria-selected="false"> 
-            <i class='bx bx-trophy'></i> Ranking
+            <button id="tab-ranking" class="tab-button" type="button" role="tab" aria-selected="false">
+                <i class='bx bx-trophy'></i> Ranking
             </button>
         </nav>
         <main id="inicio">
@@ -68,17 +68,15 @@
                         <span class="stat-label">Tempo na água</span>
                         <i class='bx bx-time-five stat-icon'></i>
                     </div>
-                    <p class="stat-value metric-value">0<span>h</span>00<span>min</span>
-                    </p>
+                    <p id="tempoTotal" class="stat-value metric-value">0<span>h</span>00<span>min</span></p>
                 </article>
                 <article class="stat-card">
                     <div class="stat-top">
                         <span class="stat-label">Sua posição</span>
                         <i class='bx bx-medal stat-icon'></i>
                     </div>
-                    <p class="stat-value metric-value">#<span class="rank-number">0</span>
-                        <span class="unit-label"> no ranking</span>
-                    </p>
+                    <p id="posicaoRanking" class="stat-value metric-value">#<span class="rank-number">0</span> <span
+                            class="unit-label">no ranking</span></p>
                 </article>
             </section>
             <div class="tab-panels">
@@ -103,7 +101,8 @@
                             <div class="field">
                                 <label for="tempo">Tempo total</label>
                                 <div class="input-wrap">
-                                    <input class="time-input" id="tempo" name="tempo" type="text" placeholder="00:35:00" required>
+                                    <input class="time-input" id="tempo" name="tempo" type="text" placeholder="00:35:00"
+                                        required>
                                 </div>
                             </div>
                         </div>
@@ -158,30 +157,29 @@
             </footer>
         </main>
     </div>
-    
+
     <div id="modalSair" class="modal-fundo" hidden>
         <div class="modal-caixa">
-         <h3>Sair da conta</h3>
-          <p>Deseja realmente sair do Raia 4?</p>
-          <div class="modal-botoes">
-              <button type="button" id="btnCancelarSair" class="btn-modal-cancelar">Cancelar</button>
-              <button type="button" id="btnConfirmarSair" class="btn-modal-sair">Sair</button>
-          </div>
-      </div>
-    </div>
-    <div id="modalExcluir" class="modal-fundo" hidden>
-    <div class="modal-caixa">
-        <h3>Excluir treino</h3>
-        <p>Deseja realmente excluir este treino? Essa ação não pode ser desfeita.</p>
-        <div class="modal-botoes">
-            <button type="button" id="btnCancelarExcluir" class="btn-modal-cancelar">Cancelar</button>
-            <button type="button" id="btnConfirmarExcluir" class="btn-modal-sair">Excluir</button>
+            <h3>Sair da conta</h3>
+            <p>Deseja realmente sair do Raia 4?</p>
+            <div class="modal-botoes">
+                <button type="button" id="btnCancelarSair" class="btn-modal-cancelar">Cancelar</button>
+                <button type="button" id="btnConfirmarSair" class="btn-modal-sair">Sair</button>
+            </div>
         </div>
     </div>
+    <div id="modalExcluir" class="modal-fundo" hidden>
+        <div class="modal-caixa">
+            <h3>Excluir treino</h3>
+            <p>Deseja realmente excluir este treino? Essa ação não pode ser desfeita.</p>
+            <div class="modal-botoes">
+                <button type="button" id="btnCancelarExcluir" class="btn-modal-cancelar">Cancelar</button>
+                <button type="button" id="btnConfirmarExcluir" class="btn-modal-sair">Excluir</button>
+            </div>
+        </div>
     </div>
     <div id="toastAviso" class="toast-aviso" hidden></div>
 
-
-
 </body>
+
 </html>
