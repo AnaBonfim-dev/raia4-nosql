@@ -12,15 +12,15 @@ app.use(express.json());
 
 const treinosRoutes = require("./routes/treinos");
 const rankingRoutes = require("./routes/ranking");
+const usuariosRoutes = require("./routes/usuarios");
 
+app.use("/api/treinos", treinosRoutes);
 app.use("/api/ranking", rankingRoutes);
+app.use("/api/usuarios", usuariosRoutes);
 
 app.get("/", (req, res) => {
     res.send("Raia 4 API funcionando!");
 });
-
-
-app.use("/api/treinos", treinosRoutes);
 
 // conecta no mongodb
 mongoose.connect(process.env.MONGO_URI)
