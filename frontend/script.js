@@ -122,7 +122,13 @@ async function carregarTreinos() {
     try {
         const resposta = await fetch(API_URL);
         if (!resposta.ok) throw new Error('Erro ao carregar treinos');
-        workouts = await resposta.json();
+        const todosTreinos = await resposta.json();
+
+        workouts = usuarioLogado
+            ? todosTreinos.filter(
+                (w) => String(w.nadador || '').toLowerCase() === usuarioLogado.nome.toLowerCase()
+              )
+            : todosTreinos;
     } catch (erro) {
         console.error('Erro ao conectar com MongoDB:', erro);
         workouts = [];
@@ -130,6 +136,7 @@ async function carregarTreinos() {
     renderStats();
     renderHistory();
 }
+
 
 // busca o ranking do redis
 async function carregarRanking() {
