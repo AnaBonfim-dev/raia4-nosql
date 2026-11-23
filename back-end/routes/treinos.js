@@ -46,26 +46,36 @@ router.get("/:id", async (req, res) => {
     }
 });
 
-
+// aq atualiza treino 
 router.put("/:id", async (req, res) => {
     try {
-        const treino = await Treino.findByIdAndUpdate(
+        const treinoAntigo = await Treino.findById(req.params.id);
+        if (!treinoAntigo) {
+            return res.status(404).json({ erro: "Treino não encontrado" });
+        }
+
+        const treinoAtualizado = await Treino.findByIdAndUpdate(
             req.params.id,
             req.body,
             { new: true, runValidators: true }
         );
 
-        if (!treino) {
-            return res.status(404).json({ erro: "Treino não encontrado" });
+        const pontosAntigos = Math.floor(treinoAntigo.distancia / 10);
+        const pontosNovos = Math.floor(treinoAtualizado.distancia / 10);
+        const diferenca = pontosNovos - pontosAntigos;
+        const nomeNadador = treinoAtualizado.nadador || req.body.nadador || "Ana Bonfim";
+
+        if (diferenca !== 0) {
+            await redisClient.zIncrBy("ranking_nadadores", diferenca, nomeNadador);
         }
 
-        res.json(treino);
+        res.json(treinoAtualizado);
     } catch (erro) {
         res.status(400).json({ erro: erro.message });
     }
 });
 
-
+// aq exclui treino
 router.delete("/:id", async (req, res) => {
     try {
         const treino = await Treino.findByIdAndDelete(req.params.id);
@@ -73,6 +83,11 @@ router.delete("/:id", async (req, res) => {
         if (!treino) {
             return res.status(404).json({ erro: "Treino não encontrado" });
         }
+
+        const pontosPerdidos = Math.floor(treino.distancia / 10);
+        const nomeNadador = treino.nadador || "Ana Bonfim";
+
+        await redisClient.zIncrBy("ranking_nadadores", -pontosPerdidos, nomeNadador);
 
         res.json({ mensagem: "Treino excluído com sucesso!" });
     } catch (erro) {
