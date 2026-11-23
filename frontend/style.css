@@ -266,6 +266,13 @@ main {
     font-size: 11px;
 }
 
+.tempo-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+}
+
+
 .submit-button {
     height: 44px;
     border: none;
@@ -462,7 +469,7 @@ main {
     color: var(--verde);
 }
 
-/* Ícones nas abas e cards */
+/*icones*/
 .tab-button {
     position: relative;
     height: 44px;
@@ -494,6 +501,18 @@ main {
     font-size: 17px;
 }
 
+
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+input[type="number"] {
+    appearance: textfield;
+}
+
+
 /*responsividade pro celular*/
 @media (max-width: 700px) {
     .stats-grid {
@@ -511,7 +530,6 @@ main {
     }
 }
 
-/*perfil e botao de sair na topbar*/
 .user-controls {
     display: flex;
     align-items: center;
