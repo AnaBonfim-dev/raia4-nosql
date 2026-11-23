@@ -99,12 +99,24 @@
                                 </div>
                             </div>
                             <div class="field">
-                                <label for="tempo">Tempo total</label>
-                                <div class="input-wrap">
-                                    <input class="time-input" id="tempo" name="tempo" type="text" placeholder="00:35:00"
-                                        required>
+                                <label for="tempoMin">Tempo total</label>
+                                <div class="tempo-grid">
+                                    <div class="input-wrap">
+                                        <input type="number" id="tempoHora" min="0" max="23" placeholder="00">
+                                        <span class="input-unit">h</span>
+                                    </div>
+                                    <div class="input-wrap">
+                                        <input type="number" id="tempoMin" min="0" max="59" placeholder="00" required>
+                                        <span class="input-unit">min</span>
+                                    </div>
+                                    <div class="input-wrap">
+                                        <input type="number" id="tempoSeg" min="0" max="59" placeholder="00">
+                                        <span class="input-unit">s</span>
+                                    </div>
                                 </div>
+                                <input type="hidden" id="tempo" name="tempo">
                             </div>
+
                         </div>
                         <div class="field-grid">
                             <div class="field">
