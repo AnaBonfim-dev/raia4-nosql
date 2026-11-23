@@ -76,7 +76,7 @@ if (profileBtn && usuarioLogado) {
 
     profileBtn.replaceWith(userControls);
 
-         document.addEventListener('click', (event) => {
+    document.addEventListener('click', (event) => {
         const modalSair = document.getElementById('modalSair');
         if (!modalSair) return;
 
@@ -93,7 +93,7 @@ if (profileBtn && usuarioLogado) {
             window.location.href = 'login.html';
         }
 
-                const modalExcluir = document.getElementById('modalExcluir');
+        const modalExcluir = document.getElementById('modalExcluir');
         if (modalExcluir) {
             if (event.target.id === 'btnCancelarExcluir' || event.target === modalExcluir) {
                 modalExcluir.hidden = true;
@@ -107,7 +107,9 @@ if (profileBtn && usuarioLogado) {
                         if (!res.ok) throw new Error('Erro ao excluir');
                         mostrarAviso('Treino excluído com sucesso!');
                         carregarTreinos();
+                        carregarRanking();
                     })
+
                     .catch((erro) => mostrarAviso('Erro ao excluir: ' + erro.message, true))
                     .finally(() => {
                         idParaExcluir = null;
@@ -127,7 +129,7 @@ async function carregarTreinos() {
         workouts = usuarioLogado
             ? todosTreinos.filter(
                 (w) => String(w.nadador || '').toLowerCase() === usuarioLogado.nome.toLowerCase()
-              )
+            )
             : todosTreinos;
     } catch (erro) {
         console.error('Erro ao conectar com MongoDB:', erro);
@@ -255,6 +257,12 @@ function resetForm() {
 form.addEventListener('submit', async (event) => {
     event.preventDefault();
 
+    const h = String(Number(document.getElementById('tempoHora')?.value || 0)).padStart(2, '0');
+    const m = String(Number(document.getElementById('tempoMin')?.value || 0)).padStart(2, '0');
+    const s = String(Number(document.getElementById('tempoSeg')?.value || 0)).padStart(2, '0');
+    timeInput.value = `${h}:${m}:${s}`;
+
+
     const treinoPayload = {
         nadador: usuarioLogado ? usuarioLogado.nome : 'Ana Bonfim',
         distancia: Number(distanceInput.value),
@@ -313,7 +321,13 @@ historyList.addEventListener('click', async (event) => {
 
     editingId = workout._id;
     distanceInput.value = String(workout.distancia);
+
     timeInput.value = workout.tempo;
+    const partesTempo = String(workout.tempo).split(':');
+    document.getElementById('tempoHora').value = Number(partesTempo.at(0) || 0) || '';
+    document.getElementById('tempoMin').value = Number(partesTempo.at(1) || 0) || '';
+    document.getElementById('tempoSeg').value = Number(partesTempo.at(2) || 0) || '';
+
     dateInput.value = String(workout.data).slice(0, 10);
     typeInput.value = workout.tipo;
     noteInput.value = workout.observacoes || '';
